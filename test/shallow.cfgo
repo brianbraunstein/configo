@@ -1,0 +1,10 @@
+
+{{ "./deep.cfgo" | import_as "deep" }}
+{{ "nudibranch" | export_from "deep" }}
+
+{{ define "needlefish" -}}
+Needlefish like it very shallow {{ . }}
+{{ run "deep" "nudibranch" " - especially variable neons" -}}
+{{ end }}
+
+This is ignored.

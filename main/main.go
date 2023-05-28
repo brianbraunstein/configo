@@ -9,6 +9,6 @@ func main() {
   templatePath := flag.String("template", "-", "template file path")
   dataPath := flag.String("data", "-", "data file path")
   flag.Parse()
-  configo.Run(*templatePath, *dataPath)
+  (&configo.Global{}).Run(*templatePath, *dataPath)
 }
 

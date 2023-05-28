@@ -8,13 +8,33 @@ CG=$(readlink -f ../genfiles/configo)
 
 function template() {
 	cat <<EOF
-This is the template file
-which uses {{ .stuff | nindent 4 }} from the data file.
-{{ define "innertmpl" -}}
+
+{{- define "innertmpl" -}}
 and it can use inner templates too! {{ . }}
 {{- end }}
+
+{{- define "innerbad" }}
+InnerBad: {{ include "ZZnopeZZ" . }}
+{{- end }}
+
+{{- define "outerbad" }}
+Calling innerbad...{{ include "innerbad" . | upper }}
+{{- end -}}
+
+This is the template file
+which uses {{ .stuff | nindent 4 }} from the data file.
+
 {{ template "innertmpl" "yay!" }}
-{{ template "innertmpl" (cheese "horray!") }}
+{{ include "innertmpl" "uppercase me" | upper }}
+{{ run "self" "innertmpl" "yay!" }}
+{{ cheese "and global functions too" }}
+{{ "this isn't output at all" | blank }}
+
+{{ "./shallow.cfgo" | import_as "shal" -}}
+{{ run "shal" "needlefish" "- and zoom at the surface" }}
+{{ run "shal" "nudibranch" "- chromodoris is found shallower though" }}
+
+{{ include "outerbad" "BadArg" }}
 EOF
 }
 
@@ -27,4 +47,3 @@ EOF
 }
 
 $CG --template=<(template) --data=<(data)
-
