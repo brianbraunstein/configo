@@ -2,7 +2,7 @@ package main
 
 import (
   "flag"
-  configo "bristyle.com/configo/lib"
+  configo "github.com/brianbraunstein/configo/lib"
 )
 
 func main() {

@@ -6,8 +6,8 @@ genrule(
   outs = ["configo"],
   srcs = glob(["*"]) + [
     "//lib",
-    "//:go_workspace",
+    "//:go_build_files",
   ],
-  cmd = "GOCACHE=$$PWD/$(BINDIR)/.gocache GOPATH=$$PWD/$(BINDIR)/.gopath go build -o \"$@\" bristyle.com/configo/main",
+  cmd = "GOCACHE=$$PWD/$(BINDIR)/.gocache GOPATH=$$PWD/$(BINDIR)/.gopath go build -o \"$@\" github.com/brianbraunstein/configo/main",
 )
 

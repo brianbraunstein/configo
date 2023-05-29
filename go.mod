@@ -1,4 +1,4 @@
-module bristyle.com/configo/lib
+module github.com/brianbraunstein/configo
 
 go 1.20
 

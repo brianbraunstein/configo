@@ -7,7 +7,7 @@ filegroup(
 )
 
 filegroup(
-  name = "go_workspace",
-  srcs = ["go.work"],
+  name = "go_build_files",
+  srcs = ["go.mod", "go.sum"],
 )
 

@@ -7,7 +7,7 @@ clean:
 	rm -rf genfiles
 
 genfiles/configo: Makefile genfiles $(shell find main) $(shell find lib)
-	go build -o $@ bristyle.com/configo/main
+	go build -o $@ github.com/brianbraunstein/configo/main
 
 genfiles:
 	mkdir -p genfiles
