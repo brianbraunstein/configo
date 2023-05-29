@@ -14,5 +14,5 @@ genfiles:
 
 .PHONY: test
 test: genfiles/configo
-	bazel test //test/...
+	bazel test --test_output=errors //test/...
 

@@ -7,7 +7,7 @@ RUN ./install_bazel.sh
 
 WORKDIR /
 COPY . .
-RUN bazel test //test/...
+RUN bazel test --test_output=errors //test/...
 RUN echo success > /out
 
 FROM scratch
