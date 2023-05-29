@@ -1,0 +1,26 @@
+
+name: test_post_submit
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Setup docker buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Run test via building image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: test/test.dockerfile
+          tags: notused
+
