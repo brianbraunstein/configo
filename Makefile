@@ -6,7 +6,7 @@ all: genfiles/configo
 clean:
 	rm -rf genfiles
 
-genfiles/configo: genfiles $(shell find main) $(shell find lib)
+genfiles/configo: Makefile genfiles $(shell find main) $(shell find lib)
 	go build -o $@ bristyle.com/configo/main
 
 genfiles:
@@ -14,7 +14,5 @@ genfiles:
 
 .PHONY: test
 test: genfiles/configo
-	@echo --------------------------------------------------------------------------------
-	@cd test; ./test.sh
-	@echo --------------------------------------------------------------------------------
+	bazel test //test/...
 
