@@ -1,0 +1,12 @@
+Package: configo
+Version: 0.0.0
+Maintainer: Brian Braunstein
+Architecture: amd64
+Section: text
+Priority: optional
+Description: Text templating tool using golang text/template.
+  Inspired by Helm and its limitations.
+  - Allows importing additional template files (and general golang text/template
+    files).
+  - Allows environment variable access.
+

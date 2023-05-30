@@ -19,7 +19,7 @@ three: four
 EOF
 }
 
-diff -u <(./main/configo --template=<(template) --data=<(data)) <(cat <<EOF
+diff -u <(./cli/configo --template=<(template) --data=<(data)) <(cat <<EOF
 This is the template file
 which uses:
     goodies
