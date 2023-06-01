@@ -1,0 +1,7 @@
+{{- "../siblingdir/file2.configo" | import_as "f2" -}}
+{{- "//final/file4.configo" | import_as "f4" -}}
+
+File 1 contents, which includes 2:
+{{ run "f2" "doIt" . | indent 2 }}
+And here's file 4:
+{{ run "f4" "doIt" . | indent 2 }}

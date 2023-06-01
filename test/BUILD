@@ -1,34 +1,21 @@
 
-sh_test(
-  name = "template_include_run",
-  srcs = ["template_include_run_test.sh"],
-  data = ["//cli:configo"],
-)
+load("//test:rules.bzl", "standard_test")
 
-sh_test(
-  name = "blank_test",
-  srcs = ["blank_test.sh"],
-  data = ["//cli:configo"],
-)
+standard_test(name="template_include_run_test")
+standard_test(name="blank_test")
+standard_test(name="data_test")
+standard_test(name="not_found_error_test")
+standard_test(name="yaml_test")
 
-sh_test(
-  name = "nested_test",
-  srcs = ["nested_test.sh"],
+standard_test(
+  name="nested_test",
   data = [
     "shallow.cfgo",
     "deep.cfgo",
-    "//cli:configo",
   ]
 )
 
-sh_test(
-  name = "data_test",
-  srcs = ["data_test.sh"],
-  data = ["//cli:configo"],
-)
-
-sh_test(
-  name = "not_found_error_test",
-  srcs = ["not_found_error_test.sh"],
-  data = ["//cli:configo"],
+standard_test(
+  name="workspace_test",
+  data = glob(["workspace_test_dir/**"]),
 )
