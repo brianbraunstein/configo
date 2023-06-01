@@ -1,0 +1,5 @@
+
+{{- define "doIt" -}}
+File 3 contents.
+{{- end -}}
+

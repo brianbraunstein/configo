@@ -1,0 +1,8 @@
+{{ "./another/file3.configo" | import_as "f3" }}
+
+{{- define "doIt" -}}
+
+File 2 contents, which also contains 3: {{- run "f3" "doIt" . | nindent 2 }}
+
+{{- end -}}
+
