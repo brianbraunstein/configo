@@ -15,6 +15,7 @@ import (
 )
  
 type File struct {
+  alias string
   fileName string  // TODO: rename path
   dir string // containing directory
   MainTemplate *template.Template
@@ -25,13 +26,20 @@ type File struct {
   repoRoot *string // accessor: mustGetRepoRoot()
 }
 
-func (f *File) Init(fileName string, globalState *GlobalState) *File {
+func (f *File) Init(alias string, fileName string, globalState *GlobalState) *File {
+  f.alias = alias
   f.fileName = filepath.Clean(fileName)
-  f.dir = filepath.Dir(f.fileName)
+  if _, foundPrefix := strings.CutPrefix(f.fileName, "/dev/"); foundPrefix {
+    // TODO: or perhaps better the directory of the including file, defaulting
+    // to CWD if this is the root template.
+    f.dir = Must(os.Getwd())
+  } else {
+    f.dir = filepath.Dir(f.fileName)
+  }
   f.globalState = globalState
-  f.MainTemplate = template.New(f.fileName).Funcs(sprig.FuncMap()).
-                                            Funcs(f.globalState.FuncMap).
-                                            Funcs(template.FuncMap{
+  f.MainTemplate = template.New(f.alias).Funcs(sprig.FuncMap()).
+                                         Funcs(f.globalState.FuncMap).
+                                         Funcs(template.FuncMap{
     "import_as": f.tfImportAs,
     "export_from": f.tfExportFrom,
     "include": f.tfInclude,
@@ -43,6 +51,10 @@ func (f *File) Init(fileName string, globalState *GlobalState) *File {
 }
 
 func(f *File) tfImportAs(alias string, importedFilePath string) string {
+  if alias == "__main__" {
+    panic("Not allowed to import_as __main__.  __main__ is reserved.")
+  }
+
   if f.importMap[alias] != nil {
     panic("Import alias already used in this scope: \"" + alias + "\"")
   }
@@ -57,7 +69,7 @@ func(f *File) tfImportAs(alias string, importedFilePath string) string {
     importedFilePath = filepath.Join(f.dir, importedFilePath)
   }
 
-  importedFile := new(File).Init(importedFilePath, f.globalState)
+  importedFile := new(File).Init(alias, importedFilePath, f.globalState)
   importedFile.MainTemplate.Parse(string(Must(ReadFileOrStdin(importedFilePath))))
   Must1(importedFile.MainTemplate.Execute(io.Discard, nil))
   f.importMap[alias] = importedFile
