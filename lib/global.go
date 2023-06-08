@@ -57,7 +57,7 @@ func (g *Global) Run(templatePath string, dataPath string) {
   if templatePath == "-" {
     templatePath = "./__stdin__"
   }
-  f := new(File).Init(templatePath, &g.GlobalState)
+  f := new(File).Init("__main__", templatePath, &g.GlobalState)
   f.MainTemplate.Parse(templateString)
   Must1(f.MainTemplate.Execute(os.Stdout, dataGolang))
 }

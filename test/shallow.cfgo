@@ -1,5 +1,5 @@
 
-{{ "./test/deep.cfgo" | import_as "deep" }}
+{{ "./deep.cfgo" | import_as "deep" }}
 {{ "nudibranch" | export_from "deep" }}
 
 {{ define "needlefish" -}}
