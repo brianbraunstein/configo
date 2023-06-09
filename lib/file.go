@@ -2,15 +2,15 @@
 package lib
 
 import (
-  "bytes"
   "errors"
   "fmt"
-  "io"
   "os"
   "path/filepath"
   "strings"
   "text/template"
+  yaml "gopkg.in/yaml.v3"
 
+  "github.com/imdario/mergo"
   "github.com/Masterminds/sprig/v3"
 )
  
@@ -42,15 +42,16 @@ func (f *File) Init(alias string, fileName string, globalState *GlobalState) *Fi
                                          Funcs(template.FuncMap{
     "import_as": f.tfImportAs,
     "export_from": f.tfExportFrom,
-    "include": f.tfInclude,
     "run": f.tfRun,
+    "include": f.tfInclude,
+    "hoist_file": f.tfHoistFile,
   })
   f.importMap = map[string]*File{}
   f.importMap["self"] = f
   return f
 }
 
-func(f *File) tfImportAs(alias string, importedFilePath string) string {
+func (f *File) tfImportAs(alias string, importedFilePath string) string {
   if alias == "__main__" {
     panic("Not allowed to import_as __main__.  __main__ is reserved.")
   }
@@ -59,24 +60,28 @@ func(f *File) tfImportAs(alias string, importedFilePath string) string {
     panic("Import alias already used in this scope: \"" + alias + "\"")
   }
 
-  // Handle "//" and relative paths (no change to abs paths).
-  if fileNameNoPrefix, prefixFound := strings.CutPrefix(importedFilePath, "//");
-        prefixFound {
-    importedFilePath = filepath.Join(f.mustGetRepoRoot(), fileNameNoPrefix)
-  } else if filepath.IsAbs(importedFilePath) {
-    // Nothing to do, already an absolute path.
-  } else {  // It's a relative path (relative to this file's dir, not CWD).
-    importedFilePath = filepath.Join(f.dir, importedFilePath)
-  }
-
-  importedFile := new(File).Init(alias, importedFilePath, f.globalState)
-  importedFile.MainTemplate.Parse(string(Must(ReadFileOrStdin(importedFilePath))))
-  Must1(importedFile.MainTemplate.Execute(io.Discard, nil))
-  f.importMap[alias] = importedFile
+  f.importMap[alias] = f.loadFile(importedFilePath, alias)
 
   // TODO(clean): can the function have no return value instead of any empty
   // string?
   return ""
+}
+
+func (f *File) loadFile(loadingPath string, alias string) *File {
+  // Handle "//" and relative paths (no change to abs paths).
+  if fileNameNoPrefix, prefixFound := strings.CutPrefix(loadingPath, "//");
+        prefixFound {
+    loadingPath = filepath.Join(f.mustGetRepoRoot(), fileNameNoPrefix)
+  } else if filepath.IsAbs(loadingPath) {
+    // Nothing to do, already an absolute path.
+  } else {  // It's a relative path (relative to this file's dir, not CWD).
+    loadingPath = filepath.Join(f.dir, loadingPath)
+  }
+
+  loadingFile := new(File).Init(alias, loadingPath, f.globalState)
+  loadingFile.MainTemplate.Parse(string(Must(ReadFileOrStdin(loadingPath))))
+  MustExecuteTemplate(loadingFile.MainTemplate, nil)
+  return loadingFile
 }
 
 func (f *File) mustGetRepoRoot() string {
@@ -133,16 +138,43 @@ func(f *File) tfRun(importName string, templateName string, context any) string 
     panic(errors.New("Unknown template called: import=" + importName +
                      " template=" + templateName))
   }
-
-  buf := bytes.Buffer{}
-  if err := requestedTemplate.Execute(&buf, context); err != nil {
-    // Newline required to make the error message readable.
-    panic(errors.New("\n" + err.Error()))
-  }
-  return buf.String()
+  return MustExecuteTemplate(requestedTemplate, context)
 }
 
 func(f *File) tfInclude(templateName string, context any) string {
   return f.tfRun("self", templateName, context)
+}
+
+func(f *File) tfHoistFile(sailFilePath string, paramTemplateName string) string {
+  sailFile := f.loadFile(sailFilePath, "__sail__")
+
+  params := map[string]any{}
+  defaultParamsTemplate := sailFile.MainTemplate.Lookup("default_params")
+  if defaultParamsTemplate != nil {
+    if err := yaml.Unmarshal([]byte(MustExecuteTemplate(defaultParamsTemplate, nil)),
+                             &params); err != nil {
+      panic(errors.New("Sail's 'default_param' template must be valid YAML: " + err.Error()))
+    }
+  }
+
+  if paramTemplateName != "" {
+    paramTemplate := f.MainTemplate.Lookup(paramTemplateName)
+    if paramTemplate == nil {
+      panic(errors.New("Hoist param template not found: " + paramTemplateName))
+    }
+    overrideParams := map[string]any{}
+    if err := yaml.Unmarshal([]byte(MustExecuteTemplate(paramTemplate, nil)),
+                             &overrideParams); err != nil {
+      panic(errors.New("hoist param template must be valid YAML: " + err.Error()))
+    }
+    mergo.Merge(&params, overrideParams, mergo.WithOverride)
+  }
+
+  sailTemplate := sailFile.MainTemplate.Lookup("sail")
+  if sailTemplate == nil {
+    panic(errors.New("hoist of sail file failed, 'sail' template not found in file: " +
+                     sailFilePath))
+  }
+  return MustExecuteTemplate(sailTemplate, map[string]any{"params": params})
 }
 
