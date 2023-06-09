@@ -2,8 +2,11 @@
 package lib
 
 import (
+  "bytes"
+  "errors"
   "io"
   "os"
+  "text/template"
 )
 
 // TODO: rename
@@ -23,3 +26,12 @@ func ReadFileOrStdin(path string) ([]byte, error) {
     return os.ReadFile(path)
   }
 }
+
+func MustExecuteTemplate(t *template.Template, context any) string {
+  buf := bytes.Buffer{}
+  if err := t.Execute(&buf, context); err != nil {
+    panic(errors.New("\n" + err.Error()))
+  }
+  return buf.String()
+}
+

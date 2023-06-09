@@ -19,3 +19,8 @@ standard_test(
   name="workspace_test",
   data = glob(["workspace_test_dir/**"]),
 )
+
+standard_test(
+  name="hoist_file_test",
+  data = ["dude.sail"],
+)
