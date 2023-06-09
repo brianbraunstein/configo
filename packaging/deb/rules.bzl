@@ -12,12 +12,14 @@ def deb_pkg_for(arch):
     outs = ["configo_" + version + "_" + arch + ".deb"],
     tools = [":make_deb_file"],
     srcs = [
+      "deb_control.envsubst",
       "//cli:cli" + suffix,
-      ":archive_template",
     ],
     cmd = "cli_path=$(execpath //cli:cli" + suffix + ")" +
           " RULEDIR=$(RULEDIR)" +
           " OUT_FILE=$@" +
+          " VERSION=" + version +
+          " ARCH=" + arch +
           " $(execpath :make_deb_file)",
   )
 
