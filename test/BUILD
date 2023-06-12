@@ -24,3 +24,12 @@ standard_test(
   name="hoist_file_test",
   data = ["dude.sail"],
 )
+
+standard_test(
+  name="nested_hoist_file_test",
+  data = [
+    "dude.sail",
+    "dude_gibberish.sail",
+  ],
+)
+
