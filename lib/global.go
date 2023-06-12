@@ -2,7 +2,6 @@
 package lib
 
 import (
-  "fmt"
   "errors"
   "os"
   "strings"
@@ -18,10 +17,6 @@ type Global struct {
   GlobalState
 }
 
-func (g *Global) tfCheese(param string) string {
-  return fmt.Sprintf("CHEESE %v CHEESE", param)
-}
-
 func (g *Global) tfToYaml(goData any) string {
   yamlData, err := yaml.Marshal(goData)
   if err != nil { panic(err) }
@@ -35,16 +30,20 @@ func (g *Global) tfFromYaml(yamlData string) map[string]any {
   return goData
 }
 
+func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int) string {
+  return cidrSubnet(cidr, subnetBits, subnetNumber)
+}
+
 func (g *Global) Run(templatePath string, dataPath string) {
   if templatePath == "-" && dataPath == "-" {
     panic(errors.New("both template and data file paths were set to stdin"));
   }
 
   g.FuncMap = template.FuncMap {
-    "cheese": g.tfCheese,
     "blank": func(ignored ...any) string { return "" },
     "toYaml": g.tfToYaml,
     "fromYaml": g.tfFromYaml,
+    "cidrSubnet": g.tfCidrSubnet,
   }
 
   var dataGolang any

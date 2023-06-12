@@ -22,7 +22,7 @@ numbers:
 EOF
 }
 
-diff -u <(./cli/configo --template=<(template)) <(cat <<EOF
+diff -u <(./cli/cli_/cli --template=<(template)) <(cat <<EOF
 Hi, my name is Dude McDuderson.
 I speak Spanish.
 I can count: uno, dos, 3, ...

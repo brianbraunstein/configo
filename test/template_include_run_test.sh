@@ -25,4 +25,4 @@ after
 EOF
 }
 
-diff -u <(./cli/configo --template=<(template)) <(expected)
+diff -u <(./cli/cli_/cli --template=<(template)) <(expected)

@@ -15,7 +15,7 @@ Calling innerbad...{{ include "innerbad" . | upper }}
 EOF
 }
 
-actual="$(./cli/configo --template=<(template) 2>&1 || true)"
+actual="$(./cli/cli_/cli --template=<(template) 2>&1 || true)"
 
 # Make sure expected is found somewhere.
 expected="Unknown template called: import=self template=ThisDoesNotExist"

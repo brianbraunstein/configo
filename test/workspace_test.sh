@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-diff -u <(./cli/configo --template=./test/workspace_test_dir/subdir/file1.configo) <(cat <<EOF
+diff -u <(./cli/cli_/cli --template=./test/workspace_test_dir/subdir/file1.configo) <(cat <<EOF
 File 1 contents, which includes 2:
   File 2 contents, which also contains 3:
     File 3 contents.

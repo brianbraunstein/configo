@@ -16,7 +16,7 @@ name: Gibby McGibberson
 EOF
 }
 
-diff -u <(./cli/configo --template=<(template)) <(cat <<EOF
+diff -u <(./cli/cli_/cli --template=<(template)) <(cat <<EOF
 Hi, my name is Nonsensey McBabblerson.
 I speak Gibberish.
 I can count: blaw, floof, bloorp, ...

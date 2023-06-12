@@ -9,7 +9,7 @@ after
 EOF
 }
 
-diff -u <(./cli/configo --template=<(template)) <(cat <<EOF
+diff -u <(./cli/cli_/cli --template=<(template)) <(cat <<EOF
 before
 xx
 after

@@ -11,7 +11,7 @@ after
 EOF
 }
 
-diff -u <(./cli/configo --template=<(template)) <(cat <<EOF
+diff -u <(./cli/cli_/cli --template=<(template)) <(cat <<EOF
 before
 Needlefish like it very shallow - and zoom at the surface
 Nudibranchs prefer it deeper  - especially variable neons

@@ -1,16 +1,11 @@
 
-.PHONY: all clean run
+.PHONY: all clean
 
-all: genfiles/configo
+all: test
+	bazel build //...
 
 clean:
-	rm -rf genfiles
-
-genfiles/configo: Makefile genfiles $(shell find cli) $(shell find lib)
-	go build -o $@ github.com/brianbraunstein/configo/cli
-
-genfiles:
-	mkdir -p genfiles
+	bazel clean
 
 .PHONY: test
 test: genfiles/configo

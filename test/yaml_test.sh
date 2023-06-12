@@ -22,7 +22,7 @@ The modified yaml output is: {{- toYaml $goData | nindent 2 }}
 EOF
 }
 
-diff -u <(./cli/configo --template=<(template)) <(cat <<EOF
+diff -u <(./cli/cli_/cli --template=<(template)) <(cat <<EOF
 The modified yaml output is:
   eight: |-
       has a lot more going
