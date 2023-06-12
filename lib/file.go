@@ -18,7 +18,7 @@ type FileContext map[string]any
  
 type File struct {
   alias string
-  fileName string  // TODO: rename "path"
+  path string
   dir string // containing directory
   MainTemplate *template.Template
   importMap map[string]*File
@@ -31,15 +31,16 @@ type File struct {
   repoRoot *string // accessor: mustGetRepoRoot()
 }
 
-func (f *File) Init(alias string, fileName string, globalState *GlobalState) *File {
+func (f *File) Init(alias string, path string, globalState *GlobalState) *File {
   f.alias = alias
-  f.fileName = filepath.Clean(fileName)
-  if _, foundPrefix := strings.CutPrefix(f.fileName, "/dev/"); foundPrefix {
+  f.path = filepath.Clean(path)
+  // TODO: perhaps list specific paths rather than just this prefix.
+  if _, foundPrefix := strings.CutPrefix(f.path, "/dev/"); foundPrefix {
     // TODO: or perhaps better the directory of the including file, defaulting
     // to CWD if this is the root template.
     f.dir = Must(os.Getwd())
   } else {
-    f.dir = filepath.Dir(f.fileName)
+    f.dir = filepath.Dir(f.path)
   }
   f.globalState = globalState
   f.MainTemplate = template.New(f.alias).Funcs(sprig.FuncMap()).
@@ -96,7 +97,7 @@ func (f *File) mustGetRepoRoot() string {
   if f.repoRoot != nil { return *f.repoRoot }
 
   f.repoRoot = new(string)
-  prevPath := f.fileName
+  prevPath := f.path
   for {
     dir := filepath.Dir(prevPath)
     if prevPath == dir {
