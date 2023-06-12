@@ -13,14 +13,19 @@ import (
   "github.com/imdario/mergo"
   "github.com/Masterminds/sprig/v3"
 )
+
+type FileContext map[string]any
  
 type File struct {
   alias string
-  fileName string  // TODO: rename path
+  fileName string  // TODO: rename "path"
   dir string // containing directory
   MainTemplate *template.Template
   importMap map[string]*File
   globalState *GlobalState
+  // TODO: reconsider how FileContext is handled.  Perhaps instead of passing it
+  // down through files, always create a new clean FileContext at each level.
+  context FileContext
 
   // lazy init variables, must be accessed via accessors
   repoRoot *string // accessor: mustGetRepoRoot()
@@ -48,9 +53,12 @@ func (f *File) Init(alias string, fileName string, globalState *GlobalState) *Fi
   })
   f.importMap = map[string]*File{}
   f.importMap["self"] = f
+  f.context = FileContext{}
   return f
 }
 
+// TODO: replace alias with return value containing an object with a Run method
+// that effectively calls "run".  Also remove the "run" function.
 func (f *File) tfImportAs(alias string, importedFilePath string) string {
   if alias == "__main__" {
     panic("Not allowed to import_as __main__.  __main__ is reserved.")
@@ -79,7 +87,7 @@ func (f *File) loadFile(loadingPath string, alias string) *File {
   }
 
   loadingFile := new(File).Init(alias, loadingPath, f.globalState)
-  loadingFile.MainTemplate.Parse(string(Must(ReadFileOrStdin(loadingPath))))
+  Must(loadingFile.MainTemplate.Parse(string(Must(ReadFileOrStdin(loadingPath)))))
   MustExecuteTemplate(loadingFile.MainTemplate, nil)
   return loadingFile
 }
@@ -145,14 +153,16 @@ func(f *File) tfInclude(templateName string, context any) string {
   return f.tfRun("self", templateName, context)
 }
 
-func(f *File) tfHoistFile(sailFilePath string, paramTemplateName string) string {
-  sailFile := f.loadFile(sailFilePath, "__sail__")
+func(f *File) tfHoistFile(sailFilePath string,
+                          paramTemplateName string) string {
+  sailFile := f.loadFile(sailFilePath, "__sail_file__:" + sailFilePath)
+  sailParams := map[string]any{}
+  sailFile.context["params"] = sailParams
 
-  params := map[string]any{}
   defaultParamsTemplate := sailFile.MainTemplate.Lookup("default_params")
   if defaultParamsTemplate != nil {
     if err := yaml.Unmarshal([]byte(MustExecuteTemplate(defaultParamsTemplate, nil)),
-                             &params); err != nil {
+                             &sailParams); err != nil {
       panic(errors.New("Sail's 'default_param' template must be valid YAML: " + err.Error()))
     }
   }
@@ -163,11 +173,11 @@ func(f *File) tfHoistFile(sailFilePath string, paramTemplateName string) string 
       panic(errors.New("Hoist param template not found: " + paramTemplateName))
     }
     overrideParams := map[string]any{}
-    if err := yaml.Unmarshal([]byte(MustExecuteTemplate(paramTemplate, nil)),
+    if err := yaml.Unmarshal([]byte(MustExecuteTemplate(paramTemplate, f.context)),
                              &overrideParams); err != nil {
       panic(errors.New("hoist param template must be valid YAML: " + err.Error()))
     }
-    mergo.Merge(&params, overrideParams, mergo.WithOverride)
+    mergo.Merge(&sailParams, overrideParams, mergo.WithOverride)
   }
 
   sailTemplate := sailFile.MainTemplate.Lookup("sail")
@@ -175,6 +185,6 @@ func(f *File) tfHoistFile(sailFilePath string, paramTemplateName string) string 
     panic(errors.New("hoist of sail file failed, 'sail' template not found in file: " +
                      sailFilePath))
   }
-  return MustExecuteTemplate(sailTemplate, map[string]any{"params": params})
+  return MustExecuteTemplate(sailTemplate, sailFile.context)
 }
 
