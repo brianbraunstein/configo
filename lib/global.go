@@ -30,7 +30,7 @@ func (g *Global) tfFromYaml(yamlData string) map[string]any {
   return goData
 }
 
-func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int) string {
+func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int64) string {
   return cidrSubnet(cidr, subnetBits, subnetNumber)
 }
 

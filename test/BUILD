@@ -6,6 +6,8 @@ standard_test(name = "blank_test")
 
 standard_test(name = "data_test")
 
+standard_test(name = "utils_test")
+
 standard_test(name = "not_found_error_test")
 
 standard_test(name = "yaml_test")

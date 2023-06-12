@@ -6,6 +6,7 @@ import (
   "errors"
   "fmt"
   "io"
+  "math/big"
   "net"
   "os"
   "text/template"
@@ -37,18 +38,18 @@ func MustExecuteTemplate(t *template.Template, context any) string {
   return buf.String()
 }
 
-func cidrSubnet(cidr string, subnetBits int, subnetNumber int) string {
+func cidrSubnet(cidr string, subnetBits int, subnetNumber int64) string {
   _, cidrNet, err := net.ParseCIDR(cidr)
   if err != nil {
     panic(err.Error())
   }
 
-  cidrBits, _ := cidrNet.Mask.Size()
-  afterBits := cidrBits + subnetBits
-  if afterBits > 32 {
+  cidrBits, totalBits := cidrNet.Mask.Size()
+  remainingBits := totalBits - cidrBits - subnetBits
+  if remainingBits < 0 {
     panic(errors.New(fmt.Sprintf(
-      "CIDR bits + subnetBits exceeds 32: cidr=%v subnetBits=%v", cidr,
-      subnetBits)))
+      "Used more bits than available in the CIDR: cidr=%v subnetBits=%v",
+      cidr, subnetBits)))
   }
 
   if subnetNumber >= (1 << subnetBits) {
@@ -57,7 +58,12 @@ func cidrSubnet(cidr string, subnetBits int, subnetNumber int) string {
       subnetBits, subnetNumber)))
   }
 
-  cidrNet.Mask = net.CIDRMask(afterBits, 32)
+  cidrNet.Mask = net.CIDRMask(cidrBits + subnetBits, totalBits)
+
+  cidrIpInt := big.NewInt(0) 
+  cidrIpInt.Or(big.NewInt(0).SetBytes(cidrNet.IP),
+               big.NewInt(0).Lsh(big.NewInt(subnetNumber), uint(remainingBits)))
+  cidrNet.IP = cidrIpInt.Bytes()
   return cidrNet.String()
 }
 
