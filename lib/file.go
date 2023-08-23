@@ -33,7 +33,7 @@ type File struct {
 
 func (f *File) Init(alias string, path string, globalState *GlobalState) *File {
   f.alias = alias
-  f.path = filepath.Clean(path)
+  f.path = Must(filepath.Abs(path))
   // TODO: perhaps list specific paths rather than just this prefix.
   if _, foundPrefix := strings.CutPrefix(f.path, "/dev/"); foundPrefix {
     // TODO: or perhaps better the directory of the including file, defaulting
@@ -101,7 +101,7 @@ func (f *File) mustGetRepoRoot() string {
   for {
     dir := filepath.Dir(prevPath)
     if prevPath == dir {
-      panic("No WORKSPACE file found in any ancestor directory.")
+      panic("No WORKSPACE file found in any ancestor directory: final_dir=" + dir)
     }
     if isRepoRoot(dir) {
       *f.repoRoot = dir
