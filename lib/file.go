@@ -34,7 +34,8 @@ type File struct {
 func (f *File) Init(alias string, path string, globalState *GlobalState) *File {
   f.alias = alias
   f.path = Must(filepath.Abs(path))
-  // TODO: perhaps list specific paths rather than just this prefix.
+  // TODO(fragility): perhaps list specific paths rather than just this prefix.
+  // TODO(portability): "/dev/" is unix specific.
   if _, foundPrefix := strings.CutPrefix(f.path, "/dev/"); foundPrefix {
     // TODO: or perhaps better the directory of the including file, defaulting
     // to CWD if this is the root template.
