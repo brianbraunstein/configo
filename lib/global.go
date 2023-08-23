@@ -30,11 +30,8 @@ func (g *Global) tfFromYaml(yamlData string) map[string]any {
   return goData
 }
 
-// TODO: look into a solution to handle subnetNumber as an int64 that doesn't
-// require lots of ugly conversion code from "any".  Generics/type constraints
-// don't seem to be allowed for these template functions.
-func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int) string {
-  return cidrSubnet(cidr, subnetBits, int64(subnetNumber))
+func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int64) string {
+  return cidrSubnet(cidr, subnetBits, subnetNumber)
 }
 
 func (g *Global) Run(templatePath string, dataPath string) {
