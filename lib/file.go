@@ -51,6 +51,7 @@ func (f *File) Init(alias string, path string, globalState *GlobalState) *File {
     "export_from": f.tfExportFrom,
     "run": f.tfRun,
     "include": f.tfInclude,
+    "expand_path": f.tfExpandPath,
     "hoist_file": f.tfHoistFile,
   })
   f.importMap = map[string]*File{}
@@ -77,17 +78,22 @@ func (f *File) tfImportAs(alias string, importedFilePath string) string {
   return ""
 }
 
-func (f *File) loadFile(loadingPath string, alias string) *File {
-  // Handle "//" and relative paths (no change to abs paths).
-  if fileNameNoPrefix, prefixFound := strings.CutPrefix(loadingPath, "//");
-        prefixFound {
-    loadingPath = filepath.Join(f.mustGetRepoRoot(), fileNameNoPrefix)
-  } else if filepath.IsAbs(loadingPath) {
+// Handle "//" and relative paths (no change to abs paths).
+func (f *File) expandPath(path string) string {
+  if pathWithoutSlashSlash, slashSlashFound := strings.CutPrefix(path, "//");
+      slashSlashFound {
+    return filepath.Join(f.mustGetRepoRoot(), pathWithoutSlashSlash)
+  } else if filepath.IsAbs(path) {
     // Nothing to do, already an absolute path.
-  } else {  // It's a relative path (relative to this file's dir, not CWD).
-    loadingPath = filepath.Join(f.dir, loadingPath)
+    return path
   }
 
+  // It's a relative path (relative to this file's dir, not CWD).
+  return filepath.Join(f.dir, path)
+}
+
+func (f *File) loadFile(loadingPath string, alias string) *File {
+  loadingPath = f.expandPath(loadingPath)
   loadingFile := new(File).Init(alias, loadingPath, f.globalState)
   Must(loadingFile.MainTemplate.Parse(string(Must(ReadFileOrStdin(loadingPath)))))
   MustExecuteTemplate(loadingFile.MainTemplate, nil)
@@ -190,3 +196,6 @@ func(f *File) tfHoistFile(sailFilePath string,
   return MustExecuteTemplate(sailTemplate, sailFile.context)
 }
 
+func(f *File) tfExpandPath(path string) string {
+  return f.expandPath(path)
+}
