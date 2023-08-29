@@ -30,7 +30,12 @@ func (g *Global) tfFromYaml(yamlData string) map[string]any {
   return goData
 }
 
-func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int64) string {
+func (g *Global) tfCidrSubnet(cidr string, subnetBits int, subnetNumber int) string {
+  return cidrSubnet(cidr, subnetBits, int64(subnetNumber))
+}
+
+// TODO(aesthetic): Look into a cleaner way to handle int64 subnet numbers.
+func (g *Global) tfCidrSubnet64(cidr string, subnetBits int, subnetNumber int64) string {
   return cidrSubnet(cidr, subnetBits, subnetNumber)
 }
 
@@ -44,6 +49,7 @@ func (g *Global) Run(templatePath string, dataPath string) {
     "toYaml": g.tfToYaml,
     "fromYaml": g.tfFromYaml,
     "cidrSubnet": g.tfCidrSubnet,
+    "cidrSubnet64": g.tfCidrSubnet64,
   }
 
   var dataGolang any
