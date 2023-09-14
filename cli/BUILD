@@ -40,17 +40,13 @@ genrule(
 )
 
 go_library(
-    name = "versionFunc",
-    srcs = [":configoVersion.go"],
-    importpath = "github.com/brianbraunstein/configo/cli",
-)
-
-go_library(
     name = "cli_lib",
-    srcs = ["main.go"],
+    srcs = [
+      "main.go",
+      ":configoVersion.go",
+    ],
     importpath = "github.com/brianbraunstein/configo/cli",
     deps = ["//lib"],
-    embed = [":versionFunc"],
 )
 
 go_binary(
