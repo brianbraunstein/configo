@@ -21,6 +21,11 @@ standard_test(
 )
 
 standard_test(
+    name = "expand_path_test",
+    data = glob(["workspace_test_dir/**"]),
+)
+
+standard_test(
     name = "workspace_test",
     data = glob(["workspace_test_dir/**"]),
 )

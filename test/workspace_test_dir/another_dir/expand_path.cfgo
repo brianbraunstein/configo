@@ -1,0 +1,3 @@
+relative: {{ expand_path "./foo/bar" }}
+workspace relative: {{ expand_path "//foo/bar" }}
+absolute: {{ expand_path "/foo/bar" }}
