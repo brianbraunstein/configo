@@ -49,16 +49,13 @@ go_library(
     name = "cli_lib",
     srcs = ["main.go"],
     importpath = "github.com/brianbraunstein/configo/cli",
-    deps = [
-        ":versionFunc",
-        "//lib",
-    ],
+    deps = ["//lib"],
+    embed = [":versionFunc"],
 )
 
 go_binary(
     name = "cli",
     embed = [
         ":cli_lib",
-        ":versionFunc",
     ],
 )

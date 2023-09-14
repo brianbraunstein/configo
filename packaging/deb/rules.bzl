@@ -1,5 +1,5 @@
 
-version = "0.0.5"
+load("//:configo_version.bzl", "configo_version")
 
 def deb_pkg_for(arch):
   suffix = "-linux_" + arch
@@ -9,7 +9,7 @@ def deb_pkg_for(arch):
 
   native.genrule(
     name = "deb" + suffix,
-    outs = ["configo_" + version + "_" + arch + ".deb"],
+    outs = ["configo_" + configo_version + "_" + arch + ".deb"],
     tools = [":make_deb_file"],
     srcs = [
       "deb_control.envsubst",
@@ -18,7 +18,7 @@ def deb_pkg_for(arch):
     cmd = "cli_path=$(execpath //cli:cli" + suffix + ")" +
           " RULEDIR=$(RULEDIR)" +
           " OUT_FILE=$@" +
-          " VERSION=" + version +
+          " VERSION=" + configo_version +
           " ARCH=" + arch +
           " $(execpath :make_deb_file)",
   )
